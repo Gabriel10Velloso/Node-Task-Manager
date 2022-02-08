@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
-
+const jwt = require('jsonwebtoken');
 //Schema para usar o middleware
 const userSchema = new mongoose.Schema({
   
@@ -45,8 +45,26 @@ const userSchema = new mongoose.Schema({
           throw new Error('Idade tem que posuir número positivo');
         }
       }
-    }
+    },
+    tokens: [{
+      token:{
+        type: String,
+        require: true,
+      }
+    }]
 });
+
+//Token
+userSchema.methods.generateAuthToken = async function(){
+  const user = this;
+  const token = jwt.sign({_id: user._id.toString()}, '1234567');
+
+  user.tokens = user.tokens.concat({ token });
+  
+  await user.save();
+
+  return token;
+}
 
 //Login
 userSchema.statics.findByCredentials = async (email, password) => {
@@ -64,7 +82,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
     throw new Error('Login Inválido');
   }
   return user;
-}
+};
 
 // Hash plain taxt password
 userSchema.pre('save', async function(next) {
