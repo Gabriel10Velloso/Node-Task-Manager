@@ -54,6 +54,20 @@ const userSchema = new mongoose.Schema({
     }]
 });
 
+// Deleta o array  de token e a senha
+// userSchema.methods.getPublicProfile = function () {
+// toJSON - remove de todas as chamadas o delete declarado
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+}
+
+
 //Token
 userSchema.methods.generateAuthToken = async function(){
   const user = this;
